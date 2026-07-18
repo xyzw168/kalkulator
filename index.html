@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Finance - Kalkulator Kuliah & Kos</title>
+    <title>Smart Finance - Kalkulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --primary: #4f46e5;
@@ -49,8 +51,15 @@
         .item-val-wrapper { flex: 1.5; }
         
         .btn { border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 15px; gap: 6px; }
+        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 10px; gap: 6px; }
         .btn-add:hover { background: #c7d2fe; }
+        
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .btn-excel { background: #e2f0d9; color: #385723; gap: 6px; }
+        .btn-excel:hover { background: #c5e0b4; }
+        .btn-receipt { background: #fff2cc; color: #7f6000; gap: 6px; }
+        .btn-receipt:hover { background: #ffe599; }
+
         .btn-reset { background: #f1f5f9; color: #475569; width: 100%; margin-bottom: 25px; font-size: 13px; font-weight: 500; }
         .btn-reset:hover { background: #e2e8f0; }
         .btn-delete { background: #fee2e2; color: var(--danger); padding: 12px 15px; }
@@ -60,9 +69,26 @@
         .summary-row { display: flex; justify-content: space-between; color: var(--text-muted); }
         .summary-row.total { color: var(--text-main); font-weight: 700; font-size: 16px; }
 
+        #print-receipt-zone { display: none; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        /* CSS KHUSUS PENCETAKAN NOTA/RESI */
+        @media print {
+            body * { display: none !important; }
+            #print-receipt-zone { display: block !important; background: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; width: 100%; max-width: 400px; margin: 0 auto; }
+            .receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
+            .receipt-header h2 { font-size: 20px; font-weight: bold; }
+            .receipt-meta { font-size: 13px; margin-bottom: 15px; line-height: 1.4; }
+            .receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            .receipt-table th { border-bottom: 1px dashed #000; padding: 6px 0; font-size: 13px; text-align: left; }
+            .receipt-table td { padding: 6px 0; font-size: 13px; vertical-align: top; }
+            .receipt-divider { border-top: 1px dashed #000; margin: 10px 0; }
+            .receipt-total-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; padding: 3px 0; }
+            .receipt-footer { text-align: center; margin-top: 30px; font-size: 12px; border-top: 2px dashed #000; padding-top: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -70,12 +96,12 @@
 <div class="app-container">
     <header>
         <h1>Smart Finance</h1>
-        <p>Alokasi Dana Kuliah & Kos Mandiri</p>
+        <p>Alokasi Pengeluaran Dana</p>
     </header>
 
     <!-- Papan Skor Utama -->
     <div class="dashboard">
-        <div class="dashboard-label">Sisa Dana Bersih</div>
+        <div class="dashboard-label">Sisa Dana</div>
         <div class="dashboard-value" id="sisaDana">Rp 0</div>
         <div class="progress-container">
             <div class="progress-bar" id="progressBar"></div>
@@ -110,6 +136,18 @@
             Tambah Pengeluaran Baru
         </button>
 
+        <!-- Grid Tombol Fitur Ekspor & Cetak -->
+        <div class="action-grid">
+            <button class="btn btn-excel" onclick="exportKeExcel()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Ekspor Excel
+            </button>
+            <button class="btn btn-receipt" onclick="cetakResiNota()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Cetak Nota
+            </button>
+        </div>
+
         <button class="btn btn-reset" onclick="resetKeDefault()">
             Reset ke Data Awal
         </button>
@@ -128,6 +166,46 @@
     </div>
 </div>
 
+<!-- CONTAINER LAYOUT RESI NOTA (DILUAR APLIKASI UTAMA) -->
+<div id="print-receipt-zone">
+    <div class="receipt-header">
+        <h2>SMART FINANCE</h2>
+        <p>Faktur Resmi Rencana Finansial</p>
+    </div>
+    <div class="receipt-meta">
+        <strong>No. Nota:</strong> SF-<span id="rcp-id">0000</span><br>
+        <strong>Tanggal:</strong> <span id="rcp-date">12/12/2026</span><br>
+        <strong>Pembuat:</strong> widiyaauwii
+    </div>
+    <table class="receipt-table">
+        <thead>
+            <tr>
+                <th style="width: 65%;">Item Alokasi</th>
+                <th style="width: 35%; text-align: right;">Jumlah</th>
+            </tr>
+        </thead>
+        <tbody id="rcp-items-body">
+        </tbody>
+    </table>
+    <div class="receipt-divider"></div>
+    <div class="receipt-total-row">
+        <span>MODAL AWAL:</span>
+        <span id="rcp-dana-awal">Rp 0</span>
+    </div>
+    <div class="receipt-total-row" style="color: #000;">
+        <span>TOTAL BEBAN:</span>
+        <span id="rcp-total-beban">Rp 0</span>
+    </div>
+    <div class="receipt-divider"></div>
+    <div class="receipt-total-row" style="font-size: 15px;">
+        <span>SISA BERSIH:</span>
+        <span id="rcp-sisa-bersih">Rp 0</span>
+    </div>
+    <div class="receipt-footer">
+        <p>Terima kasih telah menyusun anggaran dengan bijak.<br>Semoga target kuliah & kos berjalan lancar!</p>
+    </div>
+</div>
+
 <script>
     // Data default cadangan jika memori kosong
     const defaultItems = [
@@ -136,8 +214,8 @@
         { nama: "Baju PKKMB", jumlah: 130000 },
         { nama: "Baju Fakultas", jumlah: 100000 },
         { nama: "Tiket Kereta", jumlah: 278000 },
-        { nama: "Rusunawa Gedung C (6 Bln)", jumlah: 2100000 },
-        { nama: "HP Samsung A55 Second", jumlah: 4000000 },
+        { nama: "Kos", jumlah: 2100000 },
+        { nama: "HP", jumlah: 4000000 },
         { nama: "Perlengkapan Kos", jumlah: 500000 }
     ];
 
@@ -230,7 +308,6 @@
         else pBar.style.backgroundColor = 'var(--danger)';
     }
 
-    // FMenyimpan data ketikan ke memori internal browser secara real-time
     function simpanKeMemori() {
         const danaAwal = document.getElementById('danaAwal').value;
         const namaInputs = document.querySelectorAll('.item-name');
@@ -248,7 +325,6 @@
         localStorage.setItem('pengeluaran_kalkulator', JSON.stringify(daftarPengeluaran));
     }
 
-    // data lama yang tersimpan saat web dimuat ulang
     function muatDataDariMemori() {
         const memoriDana = localStorage.getItem('danaAwal_kalkulator');
         const memoriPengeluaran = localStorage.getItem('pengeluaran_kalkulator');
@@ -267,13 +343,183 @@
         kalkulasiSemua();
     }
 
-    // Tombol darurat kalau kamu mau kembalikan list ke setelan pabrik
     function resetKeDefault() {
         if (confirm("Apakah kamu yakin ingin mereset data dan kembali ke rincian awal?")) {
             localStorage.clear();
             document.getElementById('danaAwal').value = "14.500.000";
             muatDataDariMemori();
         }
+    }
+
+    // ================= FITUR BARU 1: CETAK RESI/NOTA DIGITAL =================
+    function cetakResiNota() {
+        const danaAwal = teksTitikKeAngka(document.getElementById('danaAwal').value);
+        const namaInputs = document.querySelectorAll('.item-name');
+        const valueInputs = document.querySelectorAll('.item-value');
+        const tBody = document.getElementById('rcp-items-body');
+        
+        tBody.innerHTML = "";
+        let totalBeban = 0;
+
+        namaInputs.forEach((input, index) => {
+            const nama = input.value.trim() || "Item Tanpa Nama";
+            const nilai = teksTitikKeAngka(valueInputs[index].value);
+            totalBeban += nilai;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${nama}</td>
+                <td style="text-align: right;">Rp ${angkaKeTeksTitik(nilai)}</td>
+            `;
+            tBody.appendChild(tr);
+        });
+
+        const sisaBersih = danaAwal - totalBeban;
+
+        // Set Metadata Acak untuk Resi
+        document.getElementById('rcp-id').innerText = Math.floor(1000 + Math.random() * 9000);
+        const skr = new Date();
+        document.getElementById('rcp-date').innerText = `${skr.getDate()}/${skr.getMonth()+1}/${skr.getFullYear()} ${skr.getHours()}:${skr.getMinutes()}`;
+        
+        // Set Nilai Rangkuman di Resi
+        document.getElementById('rcp-dana-awal').innerText = "Rp " + angkaKeTeksTitik(danaAwal);
+        document.getElementById('rcp-total-beban').innerText = "Rp " + angkaKeTeksTitik(totalBeban);
+        document.getElementById('rcp-sisa-bersih').innerText = (sisaBersih < 0 ? "-Rp " : "Rp ") + angkaKeTeksTitik(Math.abs(sisaBersih));
+
+        // Panggil jendela cetak browser natif
+        window.print();
+    }
+
+    // ================= FITUR BARU 2: EKSPOR MS EXCEL PROFESIONAL =================
+    async function exportKeExcel() {
+        const danaAwal = teksTitikKeAngka(document.getElementById('danaAwal').value);
+        const namaInputs = document.querySelectorAll('.item-name');
+        const valueInputs = document.querySelectorAll('.item-value');
+
+        // Buat workbook & sheet baru
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Rencana Keuangan');
+        worksheet.views = [{ showGridLines: true }];
+
+        // 1. Tambah Judul Dokumen
+        worksheet.mergeCells('A1:D1');
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = 'LAPORAN RENCANA ANGGARAN FINANSIAL';
+        titleCell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B365D' } }; // Navy Dark
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        worksheet.getRow(1).height = 35;
+
+        // 2. Info Metadata User
+        worksheet.getCell('A3').value = 'Pemilik Anggaran:';
+        worksheet.getCell('A3').font = { bold: true };
+        worksheet.getCell('B3').value = 'Widiya Astuti';
+        worksheet.getCell('A4').value = 'Tanggal Ekspor:';
+        worksheet.getCell('A4').font = { bold: true };
+        worksheet.getCell('B4').value = new Date().toLocaleDateString('id-ID');
+
+        // 3. Tabel Header Pengeluaran
+        const headerRow = worksheet.getRow(6);
+        headerRow.values = ['No', 'Deskripsi Pengeluaran', 'Alokasi Dana (IDR)', 'Status Pengecekan'];
+        headerRow.height = 25;
+        
+        ['A6', 'B6', 'C6', 'D6'].forEach(pos => {
+            const cell = worksheet.getCell(pos);
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4A90E2' } }; // Light Accent Blue
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = {
+                top: { style: 'thin', color: { argb: 'D3D3D3' } },
+                bottom: { style: 'thin', color: { argb: 'D3D3D3' } }
+            };
+        });
+
+        // 4. Input Baris Data secara Iteratif
+        let currentRowIndex = 7;
+        let totalPengeluaran = 0;
+
+        namaInputs.forEach((input, index) => {
+            const nama = input.value.trim() || `Item Baru ${index + 1}`;
+            const nilai = teksTitikKeAngka(valueInputs[index].value);
+            totalPengeluaran += nilai;
+
+            const row = worksheet.getRow(currentRowIndex);
+            row.values = [index + 1, nama, nilai, '[  ] Belum Siap'];
+            row.height = 20;
+
+            // Format Baris Data (Zebra Striping Abu-abu)
+            ['A', 'B', 'C', 'D'].forEach(col => {
+                const cell = worksheet.getCell(`${col}${currentRowIndex}`);
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    bottom: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    left: { style: 'thin', color: { argb: 'E2E8F0' } },
+                    right: { style: 'thin', color: { argb: 'E2E8F0' } }
+                };
+                if (currentRowIndex % 2 === 0) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F8FAFC' } };
+                }
+            });
+
+            worksheet.getCell(`A${currentRowIndex}`).alignment = { horizontal: 'center' };
+            worksheet.getCell(`C${currentRowIndex}`).numberFormat = '#,##0'; // Format nominal akuntansi rupiah
+            worksheet.getCell(`D${currentRowIndex}`).alignment = { horizontal: 'center' };
+
+            currentRowIndex++;
+        });
+
+        // 5. Membuat Baris Summary / Totalan
+        const sisaDanaBersih = danaAwal - totalPengeluaran;
+
+        // Baris Modal Awal
+        worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
+        worksheet.getCell(`A${currentRowIndex}`).value = 'TOTAL MODAL AWAL';
+        worksheet.getCell(`A${currentRowIndex}`).font = { bold: true };
+        worksheet.getCell(`C${currentRowIndex}`).value = danaAwal;
+        worksheet.getCell(`C${currentRowIndex}`).font = { bold: true };
+        worksheet.getCell(`C${currentRowIndex}`).numberFormat = '#,##0';
+        worksheet.getRow(currentRowIndex).height = 22;
+        currentRowIndex++;
+
+        // Baris Total Pengeluaran
+        worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
+        worksheet.getCell(`A${currentRowIndex}`).value = 'TOTAL BEBAN PENGELUARAN';
+        worksheet.getCell(`A${currentRowIndex}`).font = { bold: true };
+        worksheet.getCell(`C${currentRowIndex}`).value = totalPengeluaran;
+        worksheet.getCell(`C${currentRowIndex}`).font = { bold: true, color: { argb: 'FFEF4444' } };
+        worksheet.getCell(`C${currentRowIndex}`).numberFormat = '#,##0';
+        worksheet.getRow(currentRowIndex).height = 22;
+        currentRowIndex++;
+
+        // Baris Sisa Bersih Akhir
+        worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
+        const sisaLabel = worksheet.getCell(`A${currentRowIndex}`);
+        sisaLabel.value = 'SISA DANA BERSIH (SURPLUS/DEFISIT)';
+        sisaLabel.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        sisaLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+        
+        const sisaVal = worksheet.getCell(`C${currentRowIndex}`);
+        sisaVal.value = sisaDanaBersih;
+        sisaVal.font = { bold: true, color: { argb: sisaDanaBersih >= 0 ? 'FF10B981' : 'FFEF4444' } }; // Hijau jika sisa, merah jika minus
+        sisaVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+        sisaVal.numberFormat = '#,##0';
+        worksheet.getRow(currentRowIndex).height = 24;
+
+        // 6. Konfigurasi Lebar Kolom Otomatis (Auto-fit Column Width)
+        worksheet.columns.forEach((col, i) => {
+            let maxLen = 12;
+            col.eachCell({ includeEmpty: false }, (cell) => {
+                if (cell.row > 5 && cell.value) {
+                    maxLen = Math.max(maxLen, cell.value.toString().length + 3);
+                }
+            });
+            col.width = maxLen;
+        });
+        worksheet.getColumn(1).width = 6; // Kolom nomor dibuat ramping
+
+        // 7. Trigger Unduhan File Excel di Browser
+        const buffer = await workbook.xlsx.writeBuffer();
+        saveAs(new Blob([buffer]), `SmartFinance_Laporan_${Date.now()}.xlsx`);
     }
 
     window.onload = muatDataDariMemori;
