@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Finance - Kalkulator Kuliah</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--background); color: var(--text-main); padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        
+        .app-container { width: 100%; max-width: 550px; background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); }
+        
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { font-size: 24px; color: var(--text-main); font-weight: 800; letter-spacing: -0.5px; }
+        header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+        .dashboard { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 25px; }
+        .dashboard-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 600; }
+        .dashboard-value { font-size: 28px; font-weight: 700; margin: 5px 0 15px 0; font-feature-settings: "tnum"; }
+        
+        .progress-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
+        .progress-bar { height: 100%; width: 100%; background: var(--success); transition: width 0.4s ease, background-color 0.4s ease; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; }
+
+        .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+        .form-group { margin-bottom: 20px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .prefix { position: absolute; left: 14px; color: var(--text-muted); font-weight: 600; font-size: 15px; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 12px 14px 12px 42px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.2s; color: var(--text-main); font-weight: 500; }
+        input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+        .item-row { display: flex; gap: 10px; align-items: center; animation: fadeIn 0.3s ease; }
+        .item-name { flex: 2; padding-left: 14px !important; }
+        .item-val-wrapper { flex: 1.5; }
+        
+        .btn { border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 25px; gap: 6px; }
+        .btn-add:hover { background: #c7d2fe; }
+        .btn-delete { background: #fee2e2; color: var(--danger); padding: 12px 15px; }
+        .btn-delete:hover { background: #fca5a5; }
+
+        .summary-details { border-top: 1px dashed var(--border); padding-top: 15px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+        .summary-row { display: flex; justify-content: space-between; color: var(--text-muted); }
+        .summary-row.total { color: var(--text-main); font-weight: 700; font-size: 16px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>Smart Finance</h1>
+        <p>Alokasi Dana Kuliah & Kos Mandiri</p>
+    </header>
+
+    <!-- Papan Skor Utama -->
+    <div class="dashboard">
+        <div class="dashboard-label">Sisa Dana Bersih</div>
+        <div class="dashboard-value" id="sisaDana">Rp 0</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text">
+            <span id="progressPersen">100% Tersedia</span>
+            <span id="totalPengeluaranDashboard">Beban: Rp 0</span>
+        </div>
+    </div>
+
+    <!-- Pemasukan -->
+    <div class="form-group">
+        <div class="section-title">Modal Awal</div>
+        <div class="input-wrapper">
+            <span class="prefix">Rp</span>
+            <input type="number" id="danaAwal" value="14500000" oninput="kalkulasiSemua()">
+        </div>
+    </div>
+
+    <!-- Pengeluaran Dinamis -->
+    <div>
+        <div class="section-title">
+            <span>Daftar Pengeluaran</span>
+            <span id="jumlahItem" style="font-size: 12px; font-weight: 500; background: var(--background); padding: 2px 8px; border-radius: 20px;">0 Item</span>
+        </div>
+        
+        <div class="item-list" id="itemList">
+            <!-- Item bawaan akan di-generate otomatis oleh JavaScript -->
+        </div>
+
+        <button class="btn btn-add" onclick="tambahBarisKosong()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Pengeluaran Baru
+        </button>
+    </div>
+
+    <!-- Rangkuman Teknis -->
+    <div class="summary-details">
+        <div class="summary-row">
+            <span>Total Dana Awal</span>
+            <span id="summaryDanaAwal">Rp 0</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total Pengeluaran</span>
+            <span id="summaryTotalAlokasi" style="color: var(--danger);">Rp 0</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data bawaan dari rincian kamu yang paling update
+    const defaultItems = [
+        { nama: "UKT Kuliah", jumlah: 1000000 },
+        { nama: "Tes Kesehatan", jumlah: 210000 },
+        { nama: "Baju PKKMB", jumlah: 130000 },
+        { nama: "Baju Fakultas", jumlah: 100000 },
+        { nama: "Tiket Kereta", jumlah: 278000 },
+        { nama: "Rusunawa Gedung C (6 Bln)", jumlah: 2100000 },
+        { nama: "HP Samsung A55 Second", jumlah: 4000000 },
+        { nama: "Perlengkapan Kos", jumlah: 500000 }
+    ];
+
+    const itemListContainer = document.getElementById('itemList');
+
+    // Fungsi bikin baris pengeluaran baru di UI
+    function buatBarisPengeluaran(nama = "", jumlah = 0) {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+            <input type="text" class="item-name" placeholder="Nama pengeluaran..." value="${nama}" oninput="kalkulasiSemua()">
+            <div class="item-val-wrapper input-wrapper">
+                <span class="prefix">Rp</span>
+                <input type="number" class="item-value" placeholder="0" value="${jumlah || ''}" oninput="kalkulasiSemua()">
+            </div>
+            <button class="btn btn-delete" onclick="hapusBaris(this)">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+        `;
+        itemListContainer.appendChild(row);
+    }
+
+    // Fungsi tombol tambah item manual
+    function tambahBarisKosong() {
+        buatBarisPengeluaran("", 0);
+        kalkulasiSemua();
+        itemListContainer.scrollTop = itemListContainer.scrollHeight;
+    }
+
+    // Fungsi tombol hapus
+    function hapusBaris(button) {
+        button.parentElement.remove();
+        kalkulasiSemua();
+    }
+
+    function formatRupiah(angka) {
+        return "Rp " + new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    // Mesin utama hitung-hitungan rumus finansial
+    function kalkulasiSemua() {
+        const danaAwal = parseFloat(document.getElementById('danaAwal').value) || 0;
+        
+        const namaInputs = document.querySelectorAll('.item-name');
+        const valueInputs = document.querySelectorAll('.item-value');
+        
+        let totalPengeluaran = 0;
+        let itemAktif = 0;
+
+        valueInputs.forEach(input => {
+            const nilai = parseFloat(input.value) || 0;
+            totalPengeluaran += nilai;
+            if (input.value !== "") itemAktif++;
+        });
+
+        const sisaDana = danaAwal - totalPengeluaran;
+        
+        // Hitung persentase bar
+        let persenSisa = 0;
+        if (danaAwal > 0) {
+            persenSisa = Math.max(0, Math.min(100, (sisaDana / danaAwal) * 100));
+        }
+
+        // Update teks-teks angka di layar
+        document.getElementById('sisaDana').innerText = formatRupiah(sisaDana);
+        document.getElementById('totalPengeluaranDashboard').innerText = "Beban: " + formatRupiah(totalPengeluaran);
+        document.getElementById('summaryDanaAwal').innerText = formatRupiah(danaAwal);
+        document.getElementById('summaryTotalAlokasi').innerText = formatRupiah(totalPengeluaran);
+        document.getElementById('jumlahItem').innerText = `${namaInputs.length} Item`;
+        document.getElementById('progressPersen').innerText = `${Math.round(persenSisa)}% Sisa Dana`;
+
+        // Update animasi Progress Bar & Indikator Warna
+        const pBar = document.getElementById('progressBar');
+        pBar.style.width = `${persenSisa}%`;
+        
+        if (persenSisa > 50) {
+            pBar.style.backgroundColor = 'var(--success)';
+        } else if (persenSisa > 20) {
+            pBar.style.backgroundColor = 'var(--warning)';
+        } else {
+            pBar.style.backgroundColor = 'var(--danger)';
+        }
+    }
+
+    // Load data default saat pertama kali web dibuka
+    window.onload = function() {
+        defaultItems.forEach(item => buatBarisPengeluaran(item.nama, item.jumlah));
+        kalkulasiSemua();
+    };
+</script>
+</body>
+</html>
