@@ -11,16 +11,21 @@
     
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --background: #f8fafc;
+            --background: #f0f2f5;
             --card-bg: #ffffff;
-            --text-main: #0f172a;
+            --text-main: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
+            
+            /* Warna khusus tema nota lucu */
+            --receipt-bg: #fffdf9; /* Putih gading hangat */
+            --receipt-text: #4338ca; /* Ungu gelap estetik */
+            --receipt-accent: #c7d2fe; 
         }
 
         * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
@@ -32,13 +37,13 @@
         header h1 { font-size: 24px; color: var(--text-main); font-weight: 800; letter-spacing: -0.5px; }
         header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
 
-        .dashboard { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 25px; }
-        .dashboard-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; font-weight: 600; }
+        .dashboard { background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%); padding: 20px; border-radius: 16px; color: white; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        .dashboard-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #c7d2fe; font-weight: 600; }
         .dashboard-value { font-size: 28px; font-weight: 700; margin: 5px 0 15px 0; font-feature-settings: "tnum"; }
         
         .progress-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 999px; overflow: hidden; margin-bottom: 8px; }
         .progress-bar { height: 100%; width: 100%; background: var(--success); transition: width 0.4s ease, background-color 0.4s ease; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 12px; color: #cbd5e1; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 12px; color: #c7d2fe; }
 
         .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
 
@@ -46,7 +51,7 @@
         .input-wrapper { position: relative; display: flex; align-items: center; }
         .prefix { position: absolute; left: 14px; color: var(--text-muted); font-weight: 600; font-size: 15px; }
         input[type="text"] { width: 100%; padding: 12px 14px 12px 42px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.2s; color: var(--text-main); font-weight: 500; }
-        input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1); }
         
         .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
         .item-row { display: flex; gap: 10px; align-items: center; animation: fadeIn 0.3s ease; }
@@ -54,48 +59,108 @@
         .item-val-wrapper { flex: 1.5; }
         
         .btn { border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 10px; gap: 6px; }
-        .btn-add:hover { background: #c7d2fe; }
+        .btn-add { background: #eef2ff; color: var(--primary); width: 100%; margin-bottom: 15px; gap: 6px; }
+        .btn-add:hover { background: #e0e7ff; }
         
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn-excel { background: #e2f0d9; color: #385723; gap: 6px; }
         .btn-excel:hover { background: #c5e0b4; }
-        .btn-receipt { background: #fff2cc; color: #7f6000; gap: 6px; }
-        .btn-receipt:hover { background: #ffe599; }
+        .btn-receipt { background: #ffe4e6; color: #9f1239; gap: 6px; }
+        .btn-receipt:hover { background: #fecdd3; }
 
-        .btn-reset { background: #f1f5f9; color: #475569; width: 100%; margin-bottom: 25px; font-size: 13px; font-weight: 500; }
-        .btn-reset:hover { background: #e2e8f0; }
         .btn-delete { background: #fee2e2; color: var(--danger); padding: 12px 15px; }
         .btn-delete:hover { background: #fca5a5; }
 
-        .summary-details { border-top: 1px dashed var(--border); padding-top: 15px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+        .summary-details { border-top: 1px dashed var(--border); padding-top: 15px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; margin-top: 25px; }
         .summary-row { display: flex; justify-content: space-between; color: var(--text-muted); }
         .summary-row.total { color: var(--text-main); font-weight: 700; font-size: 16px; }
 
-        /* AREA NOTA DIGITAL (Terlihat rapi di bawah aplikasi & siap diekspor) */
-        .receipt-container-box { width: 100%; max-width: 550px; background: #ffffff; padding: 30px; border-radius: 20px; border: 2px dashed #cbd5e1; margin-top: 10px; }
+        /* ================= DESAIN NOTA LUCU / CUTE JOURNAL INTERFACE ================= */
+        .receipt-container-box { width: 100%; max-width: 550px; margin-top: 10px; text-align: center; }
         
-        .receipt-preview { background: #ffffff; color: #0f172a; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; font-family: 'Courier New', Courier, monospace; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
-        .receipt-header { text-align: center; border-bottom: 2px dashed #0f172a; padding-bottom: 15px; margin-bottom: 15px; }
-        .receipt-header h2 { font-size: 18px; font-weight: bold; letter-spacing: 1px; }
-        .receipt-meta { font-size: 13px; margin-bottom: 15px; line-height: 1.5; }
-        .receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        .receipt-table th { border-bottom: 1px dashed #0f172a; padding: 6px 0; font-size: 13px; text-align: left; }
-        .receipt-table td { padding: 6px 0; font-size: 13px; vertical-align: top; }
-        .receipt-divider { border-top: 1px dashed #0f172a; margin: 10px 0; }
-        .receipt-total-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; padding: 3px 0; }
-        .receipt-footer { text-align: center; margin-top: 25px; font-size: 12px; border-top: 2px dashed #0f172a; padding-top: 15px; line-height: 1.4; }
+        /* Kertas Nota utama bergaya retro cute */
+        .receipt-preview { 
+            background: var(--receipt-bg); 
+            color: var(--receipt-text); 
+            padding: 30px 30px 40px 30px; 
+            border-radius: 24px 24px 0 0; 
+            border: 3px solid var(--receipt-text);
+            font-family: 'Courier New', Courier, monospace; 
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.07);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Dekorasi pita hiasan di pojok nota */
+        .receipt-preview::before {
+            content: "✨ CUTE BUDGET ✨";
+            position: absolute;
+            top: 12px;
+            right: -30px;
+            background: #fef08a;
+            color: #854d0e;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 4px 30px;
+            transform: rotate(30deg);
+            border: 1px dashed #854d0e;
+        }
+
+        /* Pinggiran gerigi sobekan kertas di bawah nota */
+        .receipt-zigzag-bottom {
+            width: 100%;
+            height: 16px;
+            background: linear-gradient(-45deg, transparent 8px, var(--receipt-bg) 0), linear-gradient(45deg, transparent 8px, var(--receipt-bg) 0);
+            background-repeat: repeat-x;
+            background-size: 16px 16px;
+            position: relative;
+            margin-top: -2px;
+            filter: drop-shadow(0 3px 0 var(--receipt-text)); /* Memberi border bawah gerigi */
+            z-index: 2;
+        }
+        
+        /* Shadow layer pelengkap efek potongan kertas */
+        .receipt-zigzag-border-fix {
+            width: 100%;
+            height: 18px;
+            background: linear-gradient(-45deg, transparent 8px, var(--receipt-text) 0), linear-gradient(45deg, transparent 8px, var(--receipt-text) 0);
+            background-repeat: repeat-x;
+            background-size: 16px 16px;
+            margin-top: -18px;
+            margin-bottom: 25px;
+        }
+
+        .receipt-header { text-align: center; border-bottom: 2px dashed var(--receipt-text); padding-bottom: 18px; margin-bottom: 18px; }
+        .receipt-header h2 { font-size: 20px; font-weight: 900; letter-spacing: 1px; }
+        .receipt-header p { font-size: 12px; font-style: italic; margin-top: 3px; opacity: 0.8; }
+        
+        .receipt-meta { font-size: 13px; margin-bottom: 20px; line-height: 1.7; text-align: left; background: rgba(199, 210, 254, 0.2); padding: 12px; border-radius: 12px; border: 1px dashed var(--receipt-text); }
+        
+        .receipt-input-name { font-family: 'Courier New', Courier, monospace; font-size: 13px; border: none; border-bottom: 2px dotted var(--receipt-text); width: 180px; padding: 0 4px; outline: none; font-weight: bold; color: var(--receipt-text); background: transparent; }
+        .receipt-input-name:focus { background-color: #ffffff; }
+        
+        .receipt-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .receipt-table th { border-bottom: 2px solid var(--receipt-text); padding: 8px 0; font-size: 13px; text-align: left; font-weight: bold; }
+        .receipt-table td { padding: 8px 0; font-size: 13px; vertical-align: top; border-bottom: 1px dashed rgba(67, 56, 202, 0.15); }
+        
+        .receipt-divider { border-top: 2px dashed var(--receipt-text); margin: 12px 0; }
+        .receipt-total-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; padding: 4px 0; }
+        
+        /* Highlight khusus sisa bersih akhir */
+        .receipt-grand-total { background: #fef08a; padding: 6px 10px; border-radius: 8px; border: 2px solid var(--receipt-text); margin-top: 5px; }
+        
+        .receipt-footer { text-align: center; margin-top: 30px; font-size: 12px; border-top: 2px dashed var(--receipt-text); padding-top: 18px; line-height: 1.5; }
+        .receipt-footer span { font-size: 16px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
-        /* Sembunyikan aplikasi utama HANYA jika user menekan tombol print bawaan browser Ctrl+P */
         @media print {
             .app-container, .receipt-container-box h3, .receipt-container-box p { display: none !important; }
             body { padding: 0; background: white; }
-            .receipt-container-box { border: none; padding: 0; margin: 0; }
-            .receipt-preview { box-shadow: none; border: none; }
+            .receipt-preview { box-shadow: none; border: 2px solid #000; }
+            .receipt-input-name { border: none !important; }
         }
     </style>
 </head>
@@ -123,7 +188,7 @@
         <div class="section-title">Modal Awal</div>
         <div class="input-wrapper">
             <span class="prefix">Rp</span>
-            <input type="text" id="danaAwal" value="14.500.000" oninput="formatDanKalkulasi(this)">
+            <input type="text" id="danaAwal" value="0" oninput="formatDanKalkulasi(this)">
         </div>
     </div>
 
@@ -150,10 +215,6 @@
                 Save Gambar Nota
             </button>
         </div>
-
-        <button class="btn btn-reset" onclick="resetKeDefault()">
-            Reset ke Data Awal
-        </button>
     </div>
 
     <div class="summary-details">
@@ -168,69 +229,65 @@
     </div>
 </div>
 
-<!-- BOX LIVE PREVIEW NOTA YANG BISA DISAVE JADI GAMBAR -->
+<!-- CONTAINER PREVIEW NOTA LUCU -->
 <div class="receipt-container-box">
-    <div style="margin-bottom: 15px; text-align: center;">
-        <h3 style="font-size: 15px; color: var(--text-main);">Live Preview Nota Finansial</h3>
-        <p style="font-size: 12px; color: var(--text-muted);">Isi tabel di atas otomatis memperbarui nota di bawah ini.</p>
+    <div style="margin-bottom: 15px;">
+        <h3 style="font-size: 15px; color: var(--text-main);">✨ Live Preview Nota Lucu ✨</h3>
     </div>
     
-    <div id="receipt-capture-target" class="receipt-preview">
-        <div class="receipt-header">
-            <h2>SMART FINANCE</h2>
-            <p>Faktur Resmi Rencana Finansial</p>
+    <!-- Wrapper utama yang ditangkap oleh html2canvas -->
+    <div id="receipt-capture-wrapper" style="background: transparent; padding: 10px;">
+        <div id="receipt-capture-target" class="receipt-preview">
+            <div class="receipt-header">
+                <h2>· SMART FINANCE ·</h2>
+                <p>✦ Catatan Perencanaan Keuangan ✦</p>
+            </div>
+            <div class="receipt-meta">
+                <strong>No. Nota :</strong> SF-<span id="rcp-id">0000</span><br>
+                <strong>Tanggal  :</strong> <span id="rcp-date">12/12/2026</span><br>
+                <strong>Pembuat  :</strong> <input type="text" id="rcp-input-pembuat" class="receipt-input-name" value="Tulis Nama Anda" oninput="localStorage.setItem('namaPembuat_kalkulator', this.value)">
+            </div>
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th style="width: 65%;">Item Alokasi</th>
+                        <th style="width: 35%; text-align: right;">Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody id="rcp-items-body">
+                    <!-- Diisi otomatis oleh JavaScript -->
+                </tbody>
+            </table>
+            <div class="receipt-divider"></div>
+            <div class="receipt-total-row">
+                <span>MODAL AWAL:</span>
+                <span id="rcp-dana-awal">Rp 0</span>
+            </div>
+            <div class="receipt-total-row">
+                <span>TOTAL BEBAN:</span>
+                <span id="rcp-total-beban">Rp 0</span>
+            </div>
+            <div class="receipt-divider"></div>
+            <div class="receipt-total-row receipt-grand-total">
+                <span>SISA BERSIH:</span>
+                <span id="rcp-sisa-bersih">Rp 0</span>
+            </div>
+            <div class="receipt-footer">
+                <p>🧸 Semangat Mengatur Keuangan! 🧸<br>Don't forget to be awesome everyday.</p>
+            </div>
         </div>
-        <div class="receipt-meta">
-            <strong>No. Nota :</strong> SF-<span id="rcp-id">0000</span><br>
-            <strong>Tanggal  :</strong> <span id="rcp-date">12/12/2026</span><br>
-            <strong>Pembuat  :</strong> Widiya Astuti
-        </div>
-        <table class="receipt-table">
-            <thead>
-                <tr>
-                    <th style="width: 65%;">Item Alokasi</th>
-                    <th style="width: 35%; text-align: right;">Jumlah</th>
-                </tr>
-            </thead>
-            <tbody id="rcp-items-body">
-                <!-- Diisi otomatis oleh JavaScript -->
-            </tbody>
-        </table>
-        <div class="receipt-divider"></div>
-        <div class="receipt-total-row">
-            <span>MODAL AWAL:</span>
-            <span id="rcp-dana-awal">Rp 0</span>
-        </div>
-        <div class="receipt-total-row">
-            <span>TOTAL BEBAN:</span>
-            <span id="rcp-total-beban">Rp 0</span>
-        </div>
-        <div class="receipt-divider"></div>
-        <div class="receipt-total-row" style="font-size: 14px;">
-            <span>SISA BERSIH:</span>
-            <span id="rcp-sisa-bersih">Rp 0</span>
-        </div>
-        <div class="receipt-footer">
-            <p>Terima kasih telah menyusun anggaran dengan bijak.<br>Semoga target kuliah & kos berjalan lancar!</p>
-        </div>
+        <!-- Komponen Gerigi Sobekan Kertas -->
+        <div class="receipt-zigzag-bottom"></div>
+        <div class="receipt-zigzag-border-fix"></div>
     </div>
 </div>
 
 <script>
     const defaultItems = [
-        { nama: "UKT Kuliah", jumlah: 1000000 },
-        { nama: "Tes Kesehatan", jumlah: 210000 },
-        { nama: "Baju PKKMB", jumlah: 130000 },
-        { nama: "Baju Fakultas", jumlah: 100000 },
-        { nama: "Tiket Kereta", jumlah: 278000 },
-        { nama: "Rusunawa Gedung C (6 Bln)", jumlah: 2100000 },
-        { nama: "HP Samsung A55 Second", jumlah: 4000000 },
-        { nama: "Perlengkapan Kos", jumlah: 500000 }
+        { nama: "Contoh Pengeluaran", jumlah: 0 }
     ];
 
     const itemListContainer = document.getElementById('itemList');
-
-    // Generate Invoice ID sekali saat load
     const generatedInvoiceID = Math.floor(1000 + Math.random() * 9000);
     const skr = new Date();
     const formattedDate = `${skr.getDate()}/${skr.getMonth()+1}/${skr.getFullYear()} ${String(skr.getHours()).padStart(2, '0')}:${String(skr.getMinutes()).padStart(2, '0')}`;
@@ -249,7 +306,7 @@
         let angkaMurni = input.value.replace(/[^0-9]/g, '');
         
         if (angkaMurni === '') {
-            input.value = '';
+            input.value = '0';
         } else {
             input.value = angkaKeTeksTitik(parseFloat(angkaMurni));
         }
@@ -265,7 +322,7 @@
     function buatBarisPengeluaran(nama = "", jumlah = 0) {
         const row = document.createElement('div');
         row.className = 'item-row';
-        let jumlahTeks = jumlah ? angkaKeTeksTitik(jumlah) : '';
+        let jumlahTeks = jumlah ? angkaKeTeksTitik(jumlah) : '0';
         
         row.innerHTML = `
             <input type="text" class="item-name" placeholder="Nama pengeluaran..." value="${nama}" oninput="simpanKeMemori(); perbaruiLiveNota();">
@@ -341,7 +398,6 @@
         localStorage.setItem('pengeluaran_kalkulator', JSON.stringify(daftarPengeluaran));
     }
 
-    // ================= REAL-TIME UPDATING FOR NOTA PREVIEW =================
     function perbaruiLiveNota() {
         const danaAwal = teksTitikKeAngka(document.getElementById('danaAwal').value);
         const namaInputs = document.querySelectorAll('.item-name');
@@ -377,9 +433,13 @@
     function muatDataDariMemori() {
         const memoriDana = localStorage.getItem('danaAwal_kalkulator');
         const memoriPengeluaran = localStorage.getItem('pengeluaran_kalkulator');
+        const memoriPembuat = localStorage.getItem('namaPembuat_kalkulator');
 
         if (memoriDana !== null) {
             document.getElementById('danaAwal').value = memoriDana;
+        }
+        if (memoriPembuat !== null) {
+            document.getElementById('rcp-input-pembuat').value = memoriPembuat;
         }
 
         itemListContainer.innerHTML = "";
@@ -393,45 +453,41 @@
         perbaruiLiveNota();
     }
 
-    function resetKeDefault() {
-        if (confirm("Apakah kamu yakin ingin mereset data dan kembali ke rincian awal?")) {
-            localStorage.clear();
-            document.getElementById('danaAwal').value = "14.500.000";
-            muatDataDariMemori();
-        }
-    }
-
-    // ================= IMPLEMENTASI FITUR BARU: SAVE AS IMAGE (PNG) =================
+    // FOTO DAN SAVE NOTA CUTE JADI PNG
     function simpanNotaSebagaiGambar() {
-        const target = document.getElementById('receipt-capture-target');
+        // Menargetkan elemen pembungkus luar agar efek gerigi bawah ikut terpotret utuh
+        const target = document.getElementById('receipt-capture-wrapper');
+        const inputPembuat = document.getElementById('rcp-input-pembuat');
         
-        // Memotret node HTML target menggunakan html2canvas
+        // Hapus garis titik-titik input sementara agar terlihat clean di foto PNG
+        inputPembuat.style.borderBottom = "none";
+
         html2canvas(target, {
-            scale: 2, // Meningkatkan resolusi tangkapan gambar agar teks Courier-nya tajam
-            backgroundColor: "#ffffff",
+            scale: 2, 
+            backgroundColor: null, // Membuat area luar gerigi transparan jika di-save
             logging: false
         }).then(canvas => {
-            // Konversi canvas jadi DataURL PNG beresolusi tinggi
+            inputPembuat.style.borderBottom = "2px dotted var(--receipt-text)";
+
             const imageURI = canvas.toDataURL("image/png");
-            
-            // Programmatically triger download file gambar di browser
             const link = document.createElement('a');
-            link.download = `Nota_SmartFinance_SF${generatedInvoiceID}.png`;
+            link.download = `Nota_CuteFinance_SF${generatedInvoiceID}.png`;
             link.href = imageURI;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }).catch(err => {
+            inputPembuat.style.borderBottom = "2px dotted var(--receipt-text)";
             console.error("Gagal men-generate gambar nota: ", err);
-            alert("Terjadi kesalahan saat menyimpan gambar nota.");
         });
     }
 
-    // ================= EKSPOR EXCEL PROFESIONAL (DARI TEMPLATE SEBELUMNYA) =================
+    // EXPORT EXCEL
     async function exportKeExcel() {
         const danaAwal = teksTitikKeAngka(document.getElementById('danaAwal').value);
         const namaInputs = document.querySelectorAll('.item-name');
         const valueInputs = document.querySelectorAll('.item-value');
+        const namaPembuat = document.getElementById('rcp-input-pembuat').value;
 
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Rencana Keuangan');
@@ -441,13 +497,13 @@
         const titleCell = worksheet.getCell('A1');
         titleCell.value = 'LAPORAN RENCANA ANGGARAN FINANSIAL';
         titleCell.font = { name: 'Calibri', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
-        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1B365D' } }; 
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4F46E5' } }; // Tema Ungu Indigo Match
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
         worksheet.getRow(1).height = 35;
 
         worksheet.getCell('A3').value = 'Pemilik Anggaran:';
         worksheet.getCell('A3').font = { bold: true };
-        worksheet.getCell('B3').value = 'Widiya Astuti';
+        worksheet.getCell('B3').value = namaPembuat;
         worksheet.getCell('A4').value = 'Tanggal Ekspor:';
         worksheet.getCell('A4').font = { bold: true };
         worksheet.getCell('B4').value = new Date().toLocaleDateString('id-ID');
@@ -459,7 +515,7 @@
         ['A6', 'B6', 'C6', 'D6'].forEach(pos => {
             const cell = worksheet.getCell(pos);
             cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4A90E2' } }; 
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '6366F1' } }; 
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
         });
 
@@ -514,12 +570,12 @@
         worksheet.mergeCells(`A${currentRowIndex}:B${currentRowIndex}`);
         worksheet.getCell(`A${currentRowIndex}`).value = 'SISA DANA BERSIH';
         worksheet.getCell(`A${currentRowIndex}`).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        worksheet.getCell(`A${currentRowIndex}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+        worksheet.getCell(`A${currentRowIndex}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E293B' } };
         
         const sisaVal = worksheet.getCell(`C${currentRowIndex}`);
         sisaVal.value = sisaDanaBersih;
         sisaVal.font = { bold: true, color: { argb: sisaDanaBersih >= 0 ? 'FF10B981' : 'FFEF4444' } };
-        sisaVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '0F172A' } };
+        sisaVal.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E293B' } };
         sisaVal.numberFormat = '#,##0';
 
         worksheet.columns.forEach((col) => {
