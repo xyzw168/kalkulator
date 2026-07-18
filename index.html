@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Finance - Kalkulator Kuliah</title>
+    <title>Smart Finance - Kalkulator Kuliah & Kos</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -40,8 +40,8 @@
         .form-group { margin-bottom: 20px; }
         .input-wrapper { position: relative; display: flex; align-items: center; }
         .prefix { position: absolute; left: 14px; color: var(--text-muted); font-weight: 600; font-size: 15px; }
-        input[type="number"], input[type="text"] { width: 100%; padding: 12px 14px 12px 42px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.2s; color: var(--text-main); font-weight: 500; }
-        input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        input[type="text"] { width: 100%; padding: 12px 14px 12px 42px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; transition: all 0.2s; color: var(--text-main); font-weight: 500; }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
         
         .item-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
         .item-row { display: flex; gap: 10px; align-items: center; animation: fadeIn 0.3s ease; }
@@ -49,8 +49,10 @@
         .item-val-wrapper { flex: 1.5; }
         
         .btn { border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 25px; gap: 6px; }
+        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; margin-bottom: 15px; gap: 6px; }
         .btn-add:hover { background: #c7d2fe; }
+        .btn-reset { background: #f1f5f9; color: #475569; width: 100%; margin-bottom: 25px; font-size: 13px; font-weight: 500; }
+        .btn-reset:hover { background: #e2e8f0; }
         .btn-delete { background: #fee2e2; color: var(--danger); padding: 12px 15px; }
         .btn-delete:hover { background: #fca5a5; }
 
@@ -89,7 +91,7 @@
         <div class="section-title">Modal Awal</div>
         <div class="input-wrapper">
             <span class="prefix">Rp</span>
-            <input type="number" id="danaAwal" value="14500000" oninput="kalkulasiSemua()">
+            <input type="text" id="danaAwal" value="14.500.000" oninput="formatDanKalkulasi(this)">
         </div>
     </div>
 
@@ -101,12 +103,15 @@
         </div>
         
         <div class="item-list" id="itemList">
-            <!-- Item bawaan akan di-generate otomatis oleh JavaScript -->
         </div>
 
         <button class="btn btn-add" onclick="tambahBarisKosong()">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
             Tambah Pengeluaran Baru
+        </button>
+
+        <button class="btn btn-reset" onclick="resetKeDefault()">
+            Reset ke Data Awal
         </button>
     </div>
 
@@ -124,7 +129,7 @@
 </div>
 
 <script>
-    // Data bawaan dari rincian kamu yang paling update
+    // Data default cadangan jika memori kosong
     const defaultItems = [
         { nama: "UKT Kuliah", jumlah: 1000000 },
         { nama: "Tes Kesehatan", jumlah: 210000 },
@@ -138,15 +143,43 @@
 
     const itemListContainer = document.getElementById('itemList');
 
-    // Fungsi bikin baris pengeluaran baru di UI
+    function angkaKeTeksTitik(angka) {
+        return new Intl.NumberFormat('id-ID').format(angka);
+    }
+
+    function teksTitikKeAngka(teks) {
+        return parseFloat(teks.replace(/\./g, '')) || 0;
+    }
+
+    function formatDanKalkulasi(input) {
+        let posisiKursor = input.selectionStart;
+        let panjangLama = input.value.length;
+        let angkaMurni = input.value.replace(/[^0-9]/g, '');
+        
+        if (angkaMurni === '') {
+            input.value = '';
+        } else {
+            input.value = angkaKeTeksTitik(parseFloat(angkaMurni));
+        }
+
+        let panjangBaru = input.value.length;
+        posisiKursor = posisiKursor + (panjangBaru - panjangLama);
+        input.setSelectionRange(posisiKursor, posisiKursor);
+
+        kalkulasiSemua();
+        simpanKeMemori();
+    }
+
     function buatBarisPengeluaran(nama = "", jumlah = 0) {
         const row = document.createElement('div');
         row.className = 'item-row';
+        let jumlahTeks = jumlah ? angkaKeTeksTitik(jumlah) : '';
+        
         row.innerHTML = `
-            <input type="text" class="item-name" placeholder="Nama pengeluaran..." value="${nama}" oninput="kalkulasiSemua()">
+            <input type="text" class="item-name" placeholder="Nama pengeluaran..." value="${nama}" oninput="simpanKeMemori()">
             <div class="item-val-wrapper input-wrapper">
                 <span class="prefix">Rp</span>
-                <input type="number" class="item-value" placeholder="0" value="${jumlah || ''}" oninput="kalkulasiSemua()">
+                <input type="text" class="item-value" placeholder="0" value="${jumlahTeks}" oninput="formatDanKalkulasi(this)">
             </div>
             <button class="btn btn-delete" onclick="hapusBaris(this)">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -155,73 +188,95 @@
         itemListContainer.appendChild(row);
     }
 
-    // Fungsi tombol tambah item manual
     function tambahBarisKosong() {
         buatBarisPengeluaran("", 0);
         kalkulasiSemua();
+        simpanKeMemori();
         itemListContainer.scrollTop = itemListContainer.scrollHeight;
     }
 
-    // Fungsi tombol hapus
     function hapusBaris(button) {
         button.parentElement.remove();
         kalkulasiSemua();
+        simpanKeMemori();
     }
 
-    function formatRupiah(angka) {
-        return "Rp " + new Intl.NumberFormat('id-ID').format(angka);
-    }
-
-    // Mesin utama hitung-hitungan rumus finansial
     function kalkulasiSemua() {
-        const danaAwal = parseFloat(document.getElementById('danaAwal').value) || 0;
-        
+        const danaAwal = teksTitikKeAngka(document.getElementById('danaAwal').value);
         const namaInputs = document.querySelectorAll('.item-name');
         const valueInputs = document.querySelectorAll('.item-value');
         
         let totalPengeluaran = 0;
-        let itemAktif = 0;
-
         valueInputs.forEach(input => {
-            const nilai = parseFloat(input.value) || 0;
-            totalPengeluaran += nilai;
-            if (input.value !== "") itemAktif++;
+            totalPengeluaran += teksTitikKeAngka(input.value);
         });
 
         const sisaDana = danaAwal - totalPengeluaran;
-        
-        // Hitung persentase bar
-        let persenSisa = 0;
-        if (danaAwal > 0) {
-            persenSisa = Math.max(0, Math.min(100, (sisaDana / danaAwal) * 100));
-        }
+        let persenSisa = danaAwal > 0 ? Math.max(0, Math.min(100, (sisaDana / danaAwal) * 100)) : 0;
+        let formatSisa = sisaDana < 0 ? "-Rp " + angkaKeTeksTitik(Math.abs(sisaDana)) : "Rp " + angkaKeTeksTitik(sisaDana);
 
-        // Update teks-teks angka di layar
-        document.getElementById('sisaDana').innerText = formatRupiah(sisaDana);
-        document.getElementById('totalPengeluaranDashboard').innerText = "Beban: " + formatRupiah(totalPengeluaran);
-        document.getElementById('summaryDanaAwal').innerText = formatRupiah(danaAwal);
-        document.getElementById('summaryTotalAlokasi').innerText = formatRupiah(totalPengeluaran);
+        document.getElementById('sisaDana').innerText = formatSisa;
+        document.getElementById('totalPengeluaranDashboard').innerText = "Beban: Rp " + angkaKeTeksTitik(totalPengeluaran);
+        document.getElementById('summaryDanaAwal').innerText = "Rp " + angkaKeTeksTitik(danaAwal);
+        document.getElementById('summaryTotalAlokasi').innerText = "Rp " + angkaKeTeksTitik(totalPengeluaran);
         document.getElementById('jumlahItem').innerText = `${namaInputs.length} Item`;
         document.getElementById('progressPersen').innerText = `${Math.round(persenSisa)}% Sisa Dana`;
 
-        // Update animasi Progress Bar & Indikator Warna
         const pBar = document.getElementById('progressBar');
         pBar.style.width = `${persenSisa}%`;
         
-        if (persenSisa > 50) {
-            pBar.style.backgroundColor = 'var(--success)';
-        } else if (persenSisa > 20) {
-            pBar.style.backgroundColor = 'var(--warning)';
+        if (persenSisa > 50) pBar.style.backgroundColor = 'var(--success)';
+        else if (persenSisa > 20) pBar.style.backgroundColor = 'var(--warning)';
+        else pBar.style.backgroundColor = 'var(--danger)';
+    }
+
+    // FMenyimpan data ketikan ke memori internal browser secara real-time
+    function simpanKeMemori() {
+        const danaAwal = document.getElementById('danaAwal').value;
+        const namaInputs = document.querySelectorAll('.item-name');
+        const valueInputs = document.querySelectorAll('.item-value');
+        
+        let daftarPengeluaran = [];
+        namaInputs.forEach((input, index) => {
+            daftarPengeluaran.push({
+                nama: input.value,
+                jumlah: teksTitikKeAngka(valueInputs[index].value)
+            });
+        });
+
+        localStorage.setItem('danaAwal_kalkulator', danaAwal);
+        localStorage.setItem('pengeluaran_kalkulator', JSON.stringify(daftarPengeluaran));
+    }
+
+    // data lama yang tersimpan saat web dimuat ulang
+    function muatDataDariMemori() {
+        const memoriDana = localStorage.getItem('danaAwal_kalkulator');
+        const memoriPengeluaran = localStorage.getItem('pengeluaran_kalkulator');
+
+        if (memoriDana !== null) {
+            document.getElementById('danaAwal').value = memoriDana;
+        }
+
+        itemListContainer.innerHTML = "";
+        if (memoriPengeluaran !== null) {
+            const listData = JSON.parse(memoriPengeluaran);
+            listData.forEach(item => buatBarisPengeluaran(item.nama, item.jumlah));
         } else {
-            pBar.style.backgroundColor = 'var(--danger)';
+            defaultItems.forEach(item => buatBarisPengeluaran(item.nama, item.jumlah));
+        }
+        kalkulasiSemua();
+    }
+
+    // Tombol darurat kalau kamu mau kembalikan list ke setelan pabrik
+    function resetKeDefault() {
+        if (confirm("Apakah kamu yakin ingin mereset data dan kembali ke rincian awal?")) {
+            localStorage.clear();
+            document.getElementById('danaAwal').value = "14.500.000";
+            muatDataDariMemori();
         }
     }
 
-    // Load data default saat pertama kali web dibuka
-    window.onload = function() {
-        defaultItems.forEach(item => buatBarisPengeluaran(item.nama, item.jumlah));
-        kalkulasiSemua();
-    };
+    window.onload = muatDataDariMemori;
 </script>
 </body>
 </html>
